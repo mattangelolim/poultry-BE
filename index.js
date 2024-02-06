@@ -6,8 +6,6 @@ const morgan = require("morgan")
 const helmet = require("helmet")
 
 const CorsMiddleware = require("./middlewares/CorsMiddleware")
-
-
 const app = express()
 
 app.use(express.json());
