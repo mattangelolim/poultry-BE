@@ -35,6 +35,6 @@ const EggReport = sequelize.define("EggReport", {
     }
 });
 
-EggReport.sync()
+// EggReport.sync()
 
 module.exports = EggReport;

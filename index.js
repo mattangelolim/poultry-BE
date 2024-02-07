@@ -12,11 +12,15 @@ app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+
+const AuthRoute = require("./router/AuthenticationRouter")
+const ReportRoute = require("./router/DailyReportsRouter")
+const ApprovalRoute = require("./router/ApprovalRouter")
 
 
-
+app.use("/api", AuthRoute, ReportRoute, ApprovalRoute)
 
 
 const PORT = process.env.PORT

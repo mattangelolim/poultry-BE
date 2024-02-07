@@ -1,6 +1,7 @@
 // models/Admin.js
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const bcrypt = require("bcrypt")
 
 const User = sequelize.define("User", {
     id: {
@@ -36,5 +37,27 @@ const User = sequelize.define("User", {
     }
 });
 
-User.sync()
+// User.sync()
+
+// async function createSuperAdmin() {
+//     try {
+//         // Hash the password
+//         const hashedPassword = await bcrypt.hash("password123", 10);
+
+//         // Create the superadmin user
+//         const superAdmin = await User.create({
+//             name: "Super Admin",
+//             email: "superadmin@email.com",
+//             role: "superadmin",
+//             username: "superadmin",
+//             password: hashedPassword,
+//         });
+
+//         console.log("Superadmin created:", superAdmin);
+//     } catch (error) {
+//         console.error("Error creating superadmin:", error);
+//     }
+// }
+
+// createSuperAdmin();
 module.exports = User;
