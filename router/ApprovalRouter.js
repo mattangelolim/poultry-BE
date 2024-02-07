@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const EggReport = require("../models/eggReports")
+const EggCount = require("../models/eggCounts")
 const TotalEggs = require("../models/TotalEggs")
 const Authentication = require("../middlewares/AuthMiddleware")
 
@@ -8,7 +9,6 @@ router.post("/eggreport/approved", Authentication, async (req, res) => {
     try {
         const { id, approval } = req.body
         const userRole = req.user.role
-        // console.log(userRole)
 
         if (userRole === "employee") {
             return res.status(400).json({ message: "Employee cannot approve report" })
@@ -28,33 +28,50 @@ router.post("/eggreport/approved", Authentication, async (req, res) => {
             const egg_sm_qty = eggReport.egg_sm_produced
             const egg_md_qty = eggReport.egg_md_produced
             const egg_lg_qty = eggReport.egg_lg_produced
-    
+
             await TotalEggs.increment('egg_quantity', {
                 by: egg_sm_qty,
                 where: {
                     egg_type: 'egg_sm',
                 },
             });
-    
+
             await TotalEggs.increment('egg_quantity', {
                 by: egg_md_qty,
                 where: {
                     egg_type: 'egg_md',
                 },
             });
-    
+
             await TotalEggs.increment('egg_quantity', {
                 by: egg_lg_qty,
                 where: {
                     egg_type: 'egg_lg',
                 },
             });
-        }
-        const totalEggsAfterApproval = await TotalEggs.findAll({
-            attributes: ['egg_type', 'egg_quantity'],
-        });
 
-        console.log("after", totalEggsAfterApproval)
+            const egg_before_sm = totalEggsBeforeApproval.find((egg) => egg.egg_type === 'egg_sm').egg_quantity;
+            const egg_before_md = totalEggsBeforeApproval.find((egg) => egg.egg_type === 'egg_md').egg_quantity;
+            const egg_before_lg = totalEggsBeforeApproval.find((egg) => egg.egg_type === 'egg_lg').egg_quantity;
+
+            await EggCount.create({
+                egg_type: 'egg_sm',
+                egg_before: egg_before_sm,
+                egg_after: egg_before_sm + eggReport.egg_sm_produced,
+            });
+
+            await EggCount.create({
+                egg_type: 'egg_md',
+                egg_before: egg_before_md,
+                egg_after: egg_before_md + eggReport.egg_md_produced,
+            });
+
+            await EggCount.create({
+                egg_type: 'egg_lg',
+                egg_before: egg_before_lg,
+                egg_after: egg_before_lg + eggReport.egg_lg_produced,
+            });
+        }
 
         res.status(200).json({ message: "Status Updated Successfully" })
 
