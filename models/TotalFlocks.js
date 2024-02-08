@@ -19,5 +19,22 @@ const TotalFlocks = sequelize.define("TotalFlocks", {
     }
 });
 
-TotalFlocks.sync()
+// TotalFlocks.sync()
+
+// async function createTotalFlocksData() {
+//     try {
+
+//         // Create the superadmin user
+//         const flocks = await TotalFlocks.create({
+//             flocks_number: 0,
+//             cage_available: 200
+//         });
+
+//         console.log("flocks created:", flocks);
+//     } catch (error) {
+//         console.error("Error creating flocks:", error);
+//     }
+// }
+
+// createTotalFlocksData();
 module.exports = TotalFlocks;

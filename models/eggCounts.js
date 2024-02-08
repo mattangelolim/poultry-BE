@@ -22,6 +22,6 @@ const EggCount = sequelize.define("EggCount", {
     }
 });
 
-EggCount.sync()
+// EggCount.sync()
 
 module.exports = EggCount;

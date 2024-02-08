@@ -81,4 +81,20 @@ router.post("/eggreport/approved", Authentication, async (req, res) => {
     }
 })
 
+router.post("/flocksreport/approved", Authentication, async (req, res) => {
+    try {
+        const { id, approval } = req.body
+        const userRole = req.user.role
+
+        if (userRole === "employee") {
+            return res.status(400).json({ message: "Employee cannot approve report" })
+        }
+
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: error.message })
+    }
+})
+
 module.exports = router

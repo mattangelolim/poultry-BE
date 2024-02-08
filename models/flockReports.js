@@ -44,5 +44,7 @@ const FlocksReport = sequelize.define("FlocksReport", {
     }
 });
 
-FlocksReport.sync()
+// FlocksReport.sync()
+
+
 module.exports = FlocksReport;
