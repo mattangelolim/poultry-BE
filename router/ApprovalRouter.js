@@ -2,6 +2,8 @@ const express = require("express")
 const router = express.Router()
 const EggReport = require("../models/eggReports")
 const EggCount = require("../models/eggCounts")
+const TotalFlocks = require("../models/TotalFlocks")
+const FlocksReport = require("../models/flockReports")
 const TotalEggs = require("../models/TotalEggs")
 const Authentication = require("../middlewares/AuthMiddleware")
 
@@ -90,6 +92,31 @@ router.post("/flocksreport/approved", Authentication, async (req, res) => {
             return res.status(400).json({ message: "Employee cannot approve report" })
         }
 
+        const findRowFlocks = await FlocksReport.findByPk(id);
+
+        findRowFlocks.status = approval;
+        await findRowFlocks.save();
+
+        if (approval === "approved") {
+            const additionalFlocks = findRowFlocks.additional_flocks - (findRowFlocks.deceased_flocks + findRowFlocks.cal)
+            // console.log(additionalFlocks)
+
+            const TotalFlocksNumber = await TotalFlocks.findByPk(1)
+
+            const currentFlocksNumber = TotalFlocksNumber.flocks_number
+            const currentCageAvailable = TotalFlocksNumber.cage_available
+
+            TotalFlocksNumber.flocks_number = additionalFlocks + currentFlocksNumber
+            TotalFlocksNumber.cage_available = currentCageAvailable - additionalFlocks
+
+            if (TotalFlocksNumber.cage_available < 0) {
+                return res.status(400).json({ message: "There are no cages available" })
+            }
+
+            await TotalFlocksNumber.save()
+        }
+
+        res.status(200).json({message: "Flocks report approved"})
 
     } catch (error) {
         console.error(error)
