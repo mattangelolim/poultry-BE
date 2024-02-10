@@ -116,7 +116,21 @@ router.post("/flocksreport/approved", Authentication, async (req, res) => {
             await TotalFlocksNumber.save()
         }
 
-        res.status(200).json({message: "Flocks report approved"})
+        res.status(200).json({ message: "Flocks report approved" })
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: error.message })
+    }
+})
+
+//NEEDS TO BE DONE
+router.post("/egg/sales/approved", Authentication, async (req, res) => {
+    try {
+        const { id, approval } = req.body
+        const userRole = req.user.role
+
+
 
     } catch (error) {
         console.error(error)

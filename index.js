@@ -18,9 +18,11 @@ app.use(express.urlencoded({ extended: true })); // for parsing application/x-ww
 const AuthRoute = require("./router/AuthenticationRouter")
 const ReportRoute = require("./router/DailyReportsRouter")
 const ApprovalRoute = require("./router/ApprovalRouter")
+const FetcherRoute = require("./router/fetcherRouter")
+const SalesReportRoute = require("./router/SalesReportRouter")
 
 
-app.use("/api", AuthRoute, ReportRoute, ApprovalRoute)
+app.use("/api", AuthRoute, ReportRoute, ApprovalRoute, FetcherRoute, SalesReportRoute)
 
 
 const PORT = process.env.PORT

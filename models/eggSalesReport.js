@@ -27,9 +27,14 @@ const SalesReport = sequelize.define("SalesReport", {
     price: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
+    },
+    status:{
+        type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+        allowNull: false,
+        defaultValue: 'pending',
     }
 });
 
-SalesReport.sync()
+// SalesReport.sync()
 
 module.exports = SalesReport;
