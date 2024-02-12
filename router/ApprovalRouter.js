@@ -6,6 +6,7 @@ const TotalFlocks = require("../models/TotalFlocks")
 const FlocksReport = require("../models/flockReports")
 const TotalEggs = require("../models/TotalEggs")
 const Authentication = require("../middlewares/AuthMiddleware")
+const SalesReport = require("../models/eggSalesReport")
 
 router.post("/eggreport/approved", Authentication, async (req, res) => {
     try {
@@ -130,7 +131,47 @@ router.post("/egg/sales/approved", Authentication, async (req, res) => {
         const { id, approval } = req.body
         const userRole = req.user.role
 
+        if (userRole === "employee") {
+            return res.status(400).json({ message: "Employee cannot approve report" })
+        }
 
+        const findRowEggs = await SalesReport.findByPk(id);
+
+        if (approval === "approved") {
+            const eggType = findRowEggs.egg_type
+            const eggQuantity = findRowEggs.quantity
+
+            const findCurrEggCount = await TotalEggs.findOne({
+                where: {
+                    egg_type: eggType
+                }
+            })
+
+            if (findCurrEggCount.dataValues.egg_quantity < eggQuantity) {
+                return res.status(400).json({ message: "Insufficient egg counts in the inventory" })
+            }
+            const updatedCount = findCurrEggCount.dataValues.egg_quantity - eggQuantity
+
+            await TotalEggs.update(
+                { egg_quantity: updatedCount },
+                {
+                    where: {
+                        egg_type: eggType
+                    }
+                }
+            );
+
+            findRowEggs.status = approval;
+            await findRowEggs.save()
+
+            await EggCount.create({
+                egg_type: eggType,
+                egg_before: findCurrEggCount.dataValues.egg_quantity,
+                egg_after: updatedCount
+            })
+        }
+
+        res.status(200).json({ message: "Status Updated Successfully" })
 
     } catch (error) {
         console.error(error)

@@ -17,7 +17,7 @@ router.get("/dashboard/flocks/dets", async (req, res) => {
     }
 })
 
-router.get("/dashboard/weekly/sold", async (req, res) => {
+router.get("/dashboard/weekly/produced", async (req, res) => {
     try {
         const EggProd = await EggReport.findAll({
             where: {
@@ -26,6 +26,27 @@ router.get("/dashboard/weekly/sold", async (req, res) => {
             attributes: [
                 [Sequelize.literal('WEEK(createdAt)'), 'week'],
                 [Sequelize.literal('SUM(egg_sm_produced + egg_md_produced + egg_lg_produced)'), 'total_eggs_produced']
+            ],
+            group: ['week']
+        });
+
+        res.json(EggProd);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get("/dashboard/weekly/sold", async (req, res) => {
+    try {
+        const EggProd = await EggSales.findAll({
+            where: {
+                status: "approved"
+            },
+            attributes: [
+                [Sequelize.literal('WEEK(createdAt)'), 'week'],
+                [Sequelize.literal('SUM(price)'), 'total_eggs_sales']
             ],
             group: ['week']
         });
