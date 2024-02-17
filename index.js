@@ -21,9 +21,10 @@ const ApprovalRoute = require("./router/ApprovalRouter")
 const DashboardFetcherRoute = require("./router/dashboardFetcherRouter")
 const ReportsFetcherRoute = require("./router/reportsFetcherRouter")
 const SalesReportRoute = require("./router/SalesReportRouter")
+const ForecastingRoute = require("./router/ForecastingRouter")
 
 
-app.use("/api", AuthRoute, ReportRoute, ApprovalRoute, DashboardFetcherRoute, SalesReportRoute, ReportsFetcherRoute)
+app.use("/api", AuthRoute, ReportRoute, ApprovalRoute, DashboardFetcherRoute, SalesReportRoute, ReportsFetcherRoute, ForecastingRoute)
 
 
 const PORT = process.env.PORT
