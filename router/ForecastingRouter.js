@@ -72,6 +72,8 @@ router.get("/production/forecasting", async (req, res) => {
             }
         }
 
+        // console.log(eggSmProducedArray)
+
         const arimaSm = new ARIMA({ p: 1, d: 1, q: 1, verbose: false });
         arimaSm.train(eggSmProducedArray);
         const arimaMd = new ARIMA({ p: 1, d: 1, q: 1, verbose: false });
@@ -81,10 +83,7 @@ router.get("/production/forecasting", async (req, res) => {
 
         // Predict next values for each egg size
         const [predictionsSm] = arimaSm.predict(1);
-
-
         const [predictionsMd] = arimaMd.predict(1);
-
         const [predictionsLg] = arimaLg.predict(1);
 
 
@@ -131,42 +130,60 @@ router.get("/production/forecastings", async (req, res) => {
             }
         });
 
-        // Initialize result array
-        const result = [];
+        // Initialize arrays to hold totals for each size
+        const totalEggSmProduced = [];
+        const totalEggMdProduced = [];
+        const totalEggLgProduced = [];
 
-        // Iterate through eggReports and compile rows of the same week
+        // Iterate through eggReports and compile totals for each size
         eggReports.forEach(report => {
             const reportDate = new Date(report.updatedAt);
+            reportDate.setHours(reportDate.getHours() + 8);
+
             const weekNumber = getWeekNumber(reportDate);
 
-            // Find the start and end dates of the week
-            const weekStartDate = new Date(reportDate);
-            weekStartDate.setDate(reportDate.getDate() - reportDate.getDay()); // Start of the week (Sunday)
-            const weekEndDate = new Date(weekStartDate);
-            weekEndDate.setDate(weekEndDate.getDate() + 6); // End of the week (Saturday)
+            // If the total arrays do not have values for this week, initialize them
+            if (!totalEggSmProduced[weekNumber]) totalEggSmProduced[weekNumber] = 0;
+            if (!totalEggMdProduced[weekNumber]) totalEggMdProduced[weekNumber] = 0;
+            if (!totalEggLgProduced[weekNumber]) totalEggLgProduced[weekNumber] = 0;
 
-            // Find or create the week object in the result array
-            let weekObj = result.find(item => item.weekNumber === weekNumber);
-            if (!weekObj) {
-                weekObj = {
-                    weekNumber: weekNumber,
-                    startDate: weekStartDate.toISOString().split('T')[0], 
-                    endDate: weekEndDate.toISOString().split('T')[0], 
-                    total_egg_sm_produced: 0,
-                    total_egg_md_produced: 0,
-                    total_egg_lg_produced: 0
-                };
-                result.push(weekObj);
-            }
-
-            // Add egg production to the corresponding week
-            weekObj.total_egg_sm_produced += report.egg_sm_produced;
-            weekObj.total_egg_md_produced += report.egg_md_produced;
-            weekObj.total_egg_lg_produced += report.egg_lg_produced;
+            // Add egg production to the corresponding week and size array
+            totalEggSmProduced[weekNumber] += report.egg_sm_produced;
+            totalEggMdProduced[weekNumber] += report.egg_md_produced;
+            totalEggLgProduced[weekNumber] += report.egg_lg_produced;
         });
 
-        // Send response
-        res.json(result);
+        // Remove undefined values from arrays
+        const removeUndefined = arr => arr.filter(val => val !== undefined);
+        console.log(removeUndefined(totalEggSmProduced))
+
+        const arimaSm = new ARIMA({ p: 1, d: 1, q: 1, verbose: false });
+        arimaSm.train(removeUndefined(totalEggSmProduced));
+
+    
+        const arimaMd = new ARIMA({ p: 1, d: 1, q: 1, verbose: false });
+        arimaMd.train(removeUndefined(totalEggMdProduced));
+        const arimaLg = new ARIMA({ p: 1, d: 1, q: 1, verbose: false });
+        arimaLg.train(removeUndefined(totalEggLgProduced));
+
+        // Predict the fourth value for each size array
+        const [predictedSm] = arimaSm.predict(1);
+        const [predictedMd] = arimaMd.predict(1);
+        const [predictedLg] = arimaLg.predict(1);
+
+        const nextValueSm = Math.round(predictedSm[0]) < 0 ? 0 : Math.round(predictedSm[0]);
+        const nextValueMd = Math.round(predictedMd[0]) < 0 ? 0 : Math.round(predictedMd[0]);
+        const nextValueLg = Math.round(predictedLg[0]) < 0 ? 0 : Math.round(predictedLg[0]);
+
+        // Send response with arrays for each size
+        res.json({
+            egg_sm: removeUndefined(totalEggSmProduced),
+            egg_md: removeUndefined(totalEggMdProduced),
+            egg_lg: removeUndefined(totalEggLgProduced),
+            egg_sm_predicted: nextValueSm,
+            egg_md_predicted: nextValueMd,
+            egg_lg_predicted: nextValueLg
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Internal Server Error" });
