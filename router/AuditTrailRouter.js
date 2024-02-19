@@ -1,10 +1,13 @@
 const express = require("express")
 const router = express.Router()
 const Audit = require("../models/audit")
+const VerifyToken = require("../middlewares/AuthMiddleware")
 
-router.post("/save/audit", async (req, res) => {
+router.post("/save/audit", VerifyToken, async (req, res) => {
     try {
-        const { role, username, action, type } = req.query
+        const { action, type } = req.body
+        const username = req.user.username
+        const role = req.user.role
 
         const saveAudit = await Audit.create({
             role,
