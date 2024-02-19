@@ -29,6 +29,6 @@ const Audit = sequelize.define("Audit", {
     timestamps: true,
 });
 
-Audit.sync()
+// Audit.sync()
 
 module.exports = Audit;
