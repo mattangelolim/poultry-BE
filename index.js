@@ -15,6 +15,10 @@ app.use(morgan("common"));
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
+const fs = require('fs')
+const file = fs.readFileSync('./FFCE118E328DBD3AC4789B83609C0CA0.txt')
+const https = require('https')
+
 const AuthRoute = require("./router/AuthenticationRouter")
 const ReportRoute = require("./router/DailyReportsRouter")
 const ApprovalRoute = require("./router/ApprovalRouter")
@@ -26,6 +30,10 @@ const AuditTrailRoute = require("./router/AuditTrailRouter")
 
 
 app.use("/api", CorsMiddleware, AuthRoute, ReportRoute, ApprovalRoute, DashboardFetcherRoute, SalesReportRoute, ReportsFetcherRoute, ForecastingRoute, AuditTrailRoute)
+
+app.get('/.well-known/pki-validation/FFCE118E328DBD3AC4789B83609C0CA0.txt', (req,res) =>{
+    res.sendFile('/home/ubuntu/poultry-BE/FFCE118E328DBD3AC4789B83609C0CA0.txt')
+})
 
 
 const PORT = process.env.PORT
