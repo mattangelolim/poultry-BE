@@ -169,6 +169,10 @@ router.post("/egg/sales/approved", Authentication, async (req, res) => {
                 egg_before: findCurrEggCount.dataValues.egg_quantity,
                 egg_after: updatedCount
             })
+            
+        } else {
+            findRowEggs.status = approval;
+            await findRowEggs.save()
         }
 
         res.status(200).json({ message: "Status Updated Successfully" })
