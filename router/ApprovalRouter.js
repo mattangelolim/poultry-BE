@@ -137,6 +137,8 @@ router.post("/egg/sales/approved", Authentication, async (req, res) => {
 
         const findRowEggs = await SalesReport.findByPk(id);
 
+
+
         if (approval === "approved") {
             const eggType = findRowEggs.egg_type
             const eggQuantity = findRowEggs.quantity
@@ -160,7 +162,6 @@ router.post("/egg/sales/approved", Authentication, async (req, res) => {
                     }
                 }
             );
-
             findRowEggs.status = approval;
             await findRowEggs.save()
 
@@ -169,6 +170,9 @@ router.post("/egg/sales/approved", Authentication, async (req, res) => {
                 egg_before: findCurrEggCount.dataValues.egg_quantity,
                 egg_after: updatedCount
             })
+        } else {
+            findRowEggs.status = approval;
+            await findRowEggs.save()
         }
 
         res.status(200).json({ message: "Status Updated Successfully" })

@@ -24,7 +24,7 @@ router.post("/sales/report", Authentication, async (req, res) => {
         })
 
         if (findRowTotalEgg.egg_quantity < quantity) {
-            res.status(400).json({ message: "Inputted quantity is greater than the inventory quantity" })
+            return res.status(400).json({ message: "Inputted quantity is greater than the inventory quantity" })
         }
 
         const totalPrice = quantity * findRowTotalEgg.egg_cost
