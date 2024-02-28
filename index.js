@@ -27,6 +27,7 @@ const ReportsFetcherRoute = require("./router/reportsFetcherRouter")
 const SalesReportRoute = require("./router/SalesReportRouter")
 const ForecastingRoute = require("./router/ForecastingRouter")
 const AuditTrailRoute = require("./router/AuditTrailRouter")
+const EggVisualization = require("./router/EggVisualization")
 
 const key = fs.readFileSync('private.key')
 const cert = fs.readFileSync('certificate.crt')
@@ -37,7 +38,7 @@ const cred = {
 }
 
 
-app.use("/api", CorsMiddleware, AuthRoute, ReportRoute, ApprovalRoute, DashboardFetcherRoute, SalesReportRoute, ReportsFetcherRoute, ForecastingRoute, AuditTrailRoute)
+app.use("/api", CorsMiddleware, AuthRoute, ReportRoute, ApprovalRoute, DashboardFetcherRoute, SalesReportRoute, ReportsFetcherRoute, ForecastingRoute, AuditTrailRoute, EggVisualization)
 
 // app.get('/.well-known/pki-validation/FFCE118E328DBD3AC4789B83609C0CA0.txt', (req,res) =>{
 //     res.sendFile('/home/ubuntu/poultry-BE/FFCE118E328DBD3AC4789B83609C0CA0.txt')

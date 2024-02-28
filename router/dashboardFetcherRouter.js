@@ -4,6 +4,8 @@ const TotalFlocks = require("../models/TotalFlocks")
 const EggReport = require("../models/eggReports")
 const EggSales = require("../models/eggSalesReport")
 const Sequelize = require("sequelize")
+const SalesProd = require("../models/SalesProd")
+const { fn, col } = require('sequelize');
 
 router.get("/dashboard/flocks/dets", async (req, res) => {
     try {
@@ -53,6 +55,70 @@ router.get("/dashboard/weekly/sold", async (req, res) => {
 
         res.json(EggProd);
 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get("/dashboard/sales/prod", async (req,res) =>{
+    try {
+
+        const findEggProd = await SalesProd.findAll({
+            order: [['id', 'DESC']],
+            limit: 5
+        })
+
+        res.json(findEggProd)
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+})
+
+router.get("/dashboard/transaction", async (req,res) =>{
+    try {
+
+        const AllTransaction = await EggSales.findAll({
+            where:{
+                status: 'approved'
+            },
+            order: [['id', 'DESC']]
+        })
+
+        res.json(AllTransaction)
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+})
+
+router.get("/dashboard/egg/prod", async (req, res) => {
+    try {
+        const EggProdPerMonth = await SalesProd.findAll({
+            attributes: [
+                [fn('MONTH', col('createdAt')), 'month'],
+                [fn('YEAR', col('createdAt')), 'year'],
+                [fn('SUM', col('egg_prod')), 'total_egg_prod']
+            ],
+            group: ['year', 'month'],
+            raw: true
+        });
+
+        // Map month numbers to month names
+        const monthNames = [
+            "Jan", "Feb", "Mar", "Apr", "May", "June", 
+            "July", "Aug", "Sept", "Oct", "Nov", "Dec"
+        ];
+
+        // Update the month property to use month names
+        EggProdPerMonth.forEach(entry => {
+            entry.month = monthNames[entry.month - 1]; // Month number is 1-based
+        });
+        
+        res.json(EggProdPerMonth);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: error.message });

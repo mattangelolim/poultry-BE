@@ -7,6 +7,9 @@ const FlocksReport = require("../models/flockReports")
 const TotalEggs = require("../models/TotalEggs")
 const Authentication = require("../middlewares/AuthMiddleware")
 const SalesReport = require("../models/eggSalesReport")
+const SalesProd = require("../models/SalesProd")
+const { Op, fn, col } = require('sequelize');
+const { startOfDay, endOfDay } = require("date-fns")
 
 router.post("/eggreport/approved", Authentication, async (req, res) => {
     try {
@@ -31,6 +34,9 @@ router.post("/eggreport/approved", Authentication, async (req, res) => {
             const egg_sm_qty = eggReport.egg_sm_produced
             const egg_md_qty = eggReport.egg_md_produced
             const egg_lg_qty = eggReport.egg_lg_produced
+            const rejected = eggReport.rejected
+
+            const totalqty = egg_lg_qty + egg_md_qty + egg_sm_qty
 
             await TotalEggs.increment('egg_quantity', {
                 by: egg_sm_qty,
@@ -52,6 +58,36 @@ router.post("/eggreport/approved", Authentication, async (req, res) => {
                     egg_type: 'egg_lg',
                 },
             });
+
+            const currentDate = new Date();
+
+
+            const startOfToday = startOfDay(currentDate);
+            const endOfToday = endOfDay(currentDate);
+
+            // Find the entry for the current date
+            let existingEntry = await SalesProd.findOne({
+                where: {
+                    createdAt: {
+                        [Op.between]: [startOfToday, endOfToday]
+                    }
+                }
+            });
+
+            console.log(existingEntry);
+
+            if (existingEntry) {
+                // If entry exists, update it
+                existingEntry.egg_prod += totalqty;
+                existingEntry.egg_reject += rejected;
+                await existingEntry.save();
+            } else {
+                // If entry doesn't exist, create a new one
+                await SalesProd.create({
+                    egg_prod: totalqty,
+                    egg_reject: rejected
+                });
+            }
 
             const egg_before_sm = totalEggsBeforeApproval.find((egg) => egg.egg_type === 'egg_sm').egg_quantity;
             const egg_before_md = totalEggsBeforeApproval.find((egg) => egg.egg_type === 'egg_md').egg_quantity;
@@ -161,6 +197,33 @@ router.post("/egg/sales/approved", Authentication, async (req, res) => {
                 }
             );
 
+            const currentDate = new Date();
+
+            const startOfToday = startOfDay(currentDate);
+            const endOfToday = endOfDay(currentDate);
+
+            // Find the entry for the current date
+            let existingEntry = await SalesProd.findOne({
+                where: {
+                    createdAt: {
+                        [Op.between]: [startOfToday, endOfToday]
+                    }
+                }
+            });
+
+            console.log(existingEntry)
+
+            if (existingEntry) {
+                // If entry exists, update it
+                existingEntry.egg_sales += eggQuantity;
+                await existingEntry.save();
+            } else {
+                // If entry doesn't exist, create a new one
+                await SalesProd.create({
+                    egg_sales: eggQuantity,
+                });
+            }
+
             findRowEggs.status = approval;
             await findRowEggs.save()
 
@@ -169,7 +232,7 @@ router.post("/egg/sales/approved", Authentication, async (req, res) => {
                 egg_before: findCurrEggCount.dataValues.egg_quantity,
                 egg_after: updatedCount
             })
-            
+
         } else {
             findRowEggs.status = approval;
             await findRowEggs.save()
