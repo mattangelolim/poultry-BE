@@ -43,6 +43,7 @@ router.get("/fetch/flocks/approval", async (req, res) => {
                 status: "pending"
             }
         })
+        console.log(approvalReports)
         res.json(approvalReports)
 
     } catch (error) {
@@ -57,8 +58,27 @@ router.get("/fetch/egg/visualization", async (req, res) => {
             where: {
                 status: {
                     [Op.ne]: "pending" // Use Op.ne (not equal) operator to find reports where status is not "pending"
+                    
                 }
             }
+        });
+        res.json(approvalReports);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get("/fetch/egg/inventory", async (req, res) => {
+    try {
+        const approvalReports = await EggReport.findAll({
+            where: {
+                status: {
+                    [Op.ne]: "pending" // Use Op.ne (not equal) operator to find reports where status is not "pending"
+                    
+                }
+            },
+            order:[['id', 'DESC']]
         });
         res.json(approvalReports);
     } catch (error) {
