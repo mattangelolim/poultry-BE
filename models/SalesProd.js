@@ -26,7 +26,7 @@ const SalesProd = sequelize.define("SalesProd", {
     }
 });
 
-SalesProd.sync()
+// SalesProd.sync()
 
 
 module.exports = SalesProd;

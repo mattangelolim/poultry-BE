@@ -6,6 +6,7 @@ const EggSales = require("../models/eggSalesReport")
 const Sequelize = require("sequelize")
 const SalesProd = require("../models/SalesProd")
 const { fn, col } = require('sequelize');
+const FlocksReport = require("../models/flockReports")
 
 router.get("/dashboard/flocks/dets", async (req, res) => {
     try {
@@ -124,6 +125,20 @@ router.get("/dashboard/egg/prod", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+
+router.get("/flocks/rep/approved", async (req,res) =>{
+    try {
+        const flocksTable = await FlocksReport.findAll({
+            where:{
+                status:"approved"
+            }
+        })
+        res.json(flocksTable)
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+})
 
 
 module.exports = router
