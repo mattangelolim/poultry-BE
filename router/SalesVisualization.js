@@ -12,7 +12,7 @@ router.get("/daily/sales/visual", async (req, res) => {
 
         // Assuming your EggSalesReport model has columns: egg_type, date, and quantity
         const dailySales = await SalesReport.findAll({
-            attributes: ["egg_type", "date", "quantity"],
+            attributes: ["egg_type", "date", "quantity", ],
             date: { $gte: startOfCurrentMonth, $lte: endOfCurrentMonth },
             where: {
                 status: "approved",
@@ -53,6 +53,54 @@ router.get("/daily/sales/visual", async (req, res) => {
     }
 });
 
+router.get("/daily/pricesales/visual", async (req, res) => {
+    try {
+        const currentDate = new Date();
+        const startOfCurrentMonth = startOfMonth(currentDate);
+        const endOfCurrentMonth = endOfMonth(currentDate);
+
+        // Assuming your EggSalesReport model has columns: egg_type, date, and quantity
+        const dailySales = await SalesReport.findAll({
+            attributes: ["egg_type", "date", "price", ],
+            date: { $gte: startOfCurrentMonth, $lte: endOfCurrentMonth },
+            where: {
+                status: "approved",
+            },
+            raw: true,
+        });
+
+        // Initialize an object to store aggregated sales per date
+        const aggregatedSalesByDate = {};
+
+        dailySales.forEach((sale) => {
+            const { egg_type, date, price } = sale;
+
+            // Format the date to match your desired output
+            const formattedDate = format(new Date(date), "yyyy-MM-dd");
+
+            // Create an entry for the date
+            if (!aggregatedSalesByDate[formattedDate]) {
+                aggregatedSalesByDate[formattedDate] = {
+                    date: formattedDate,
+                    egg_sm: 0,
+                    egg_md: 0,
+                    egg_lg: 0,
+                };
+            }
+
+            // Update the aggregated sales based on egg type and add quantity
+            aggregatedSalesByDate[formattedDate][egg_type.toLowerCase()] += parseFloat(price);
+        });
+
+        // Convert the object values to an array
+        const result = Object.values(aggregatedSalesByDate);
+
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+});
 
 router.get("/weekly/sales/visual", async (req, res) => {
     try {
