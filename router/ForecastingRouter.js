@@ -51,7 +51,7 @@ router.get("/production/forecastings", async (req, res) => {
         arimaSm.train(removeUndefined(totalEggSmProduced));
 
     
-        const arimaMd = new ARIMA({ p: 1, d: 1, q: 1, verbose: false });
+        const arimaMd = new ARIMA({ p: 2, d: 1, q: 1, verbose: false });
         arimaMd.train(removeUndefined(totalEggMdProduced));
         const arimaLg = new ARIMA({ p: 1, d: 1, q: 1, verbose: false });
         arimaLg.train(removeUndefined(totalEggLgProduced));
@@ -65,14 +65,15 @@ router.get("/production/forecastings", async (req, res) => {
         const nextValueMd = Math.round(predictedMd[0]) < 0 ? 0 : Math.round(predictedMd[0]);
         const nextValueLg = Math.round(predictedLg[0]) < 0 ? 0 : Math.round(predictedLg[0]);
 
+        totalEggSmProduced.push(nextValueSm);
+        totalEggMdProduced.push(nextValueMd);
+        totalEggLgProduced.push(nextValueLg);
+
         // Send response with arrays for each size
         res.json({
             egg_sm: removeUndefined(totalEggSmProduced),
             egg_md: removeUndefined(totalEggMdProduced),
-            egg_lg: removeUndefined(totalEggLgProduced),
-            egg_sm_predicted: nextValueSm,
-            egg_md_predicted: nextValueMd,
-            egg_lg_predicted: nextValueLg
+            egg_lg: removeUndefined(totalEggLgProduced)
         });
     } catch (error) {
         console.error(error);
